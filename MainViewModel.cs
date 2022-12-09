@@ -9,7 +9,8 @@ namespace DESAlgorytmEncryptDecrypt
 {
     public class MainViewModel :ObservableObject
     {
-        public string Password { private get; set; }
+        private string DESKey = "AQWSEDRF";
+        private string DESIV = "HGFEDCBA";
         public string EncryptedText { get; set; }
 
         public string DecryptedText { get; set; }
@@ -32,27 +33,16 @@ namespace DESAlgorytmEncryptDecrypt
                 return;
             }
 
-            if (string.IsNullOrEmpty(Password))
-            {
-                MessageBox.Show("Podaj hasło");
-                return;
-            }
-
-            if (Password.Length < 8)
-            {
-                MessageBox.Show("Za krótkie hasło minimum 8 znaków");
-                return;
-            }
             try
             {
                 string encryptedMessage = EncryptedText;
-                string password = Password;
 
                 byte[] encryptedMessageBytes = Convert.FromBase64String(encryptedMessage);
-                byte[] passwordBytes = ASCIIEncoding.ASCII.GetBytes(password);
+                byte[] DESKeyBytes = ASCIIEncoding.ASCII.GetBytes(DESKey);
+                byte[] DESIVBytes = ASCIIEncoding.ASCII.GetBytes(DESIV);
 
                 DESCryptoServiceProvider provider = new DESCryptoServiceProvider();
-                ICryptoTransform transform = provider.CreateDecryptor(passwordBytes, passwordBytes);
+                ICryptoTransform transform = provider.CreateDecryptor(DESKeyBytes, DESIVBytes);
                 CryptoStreamMode mode = CryptoStreamMode.Write;
 
 
@@ -66,15 +56,15 @@ namespace DESAlgorytmEncryptDecrypt
                 memStream.Read(decryptedMessageBytes, 0, decryptedMessageBytes.Length);
 
                 string message = ASCIIEncoding.ASCII.GetString(decryptedMessageBytes);
-
+                EncryptedText = string.Empty;
 
                 DecryptedText = message;
                 OnPropertyChanged(nameof(DecryptedText));
+                OnPropertyChanged(nameof(EncryptedText));
             }
             catch(Exception ex)
             {
-                MessageBox.Show($"Nie udało się odszyfrować: {DecryptedText}");
-                MessageBox.Show(ex.Message);
+                MessageBox.Show($"Nie udało się odszyfrować: {EncryptedText}");
             }
             
         }
@@ -87,28 +77,16 @@ namespace DESAlgorytmEncryptDecrypt
                 return;
             }
 
-            if (string.IsNullOrEmpty(Password))
-            {
-                MessageBox.Show("Podaj hasło");
-                return;
-            }
-
-            if (Password.Length < 8)
-            {
-                MessageBox.Show("Za krótkie hasło minimum 8 znaków");
-                return;
-            }
-
             try
             {
                 string message = DecryptedText;
-                string password = Password;
 
                 byte[] messageBytes = ASCIIEncoding.ASCII.GetBytes(message);
-                byte[] passwordBytes = ASCIIEncoding.ASCII.GetBytes(password);
+                byte[] DESKeyBytes = ASCIIEncoding.ASCII.GetBytes(DESKey);
+                byte[] DESIVBytes = ASCIIEncoding.ASCII.GetBytes(DESIV);
 
                 DESCryptoServiceProvider provider = new DESCryptoServiceProvider();
-                ICryptoTransform transform = provider.CreateEncryptor(passwordBytes, passwordBytes);
+                ICryptoTransform transform = provider.CreateEncryptor(DESKeyBytes, DESIVBytes);
                 CryptoStreamMode mode = CryptoStreamMode.Write;
 
 
@@ -122,15 +100,15 @@ namespace DESAlgorytmEncryptDecrypt
                 memStream.Read(encryptedMessageBytes, 0, encryptedMessageBytes.Length);
 
                 string encryptedMessage = Convert.ToBase64String(encryptedMessageBytes);
-
+                DecryptedText = string.Empty;
 
                 EncryptedText = encryptedMessage;
+                OnPropertyChanged(nameof(DecryptedText));
                 OnPropertyChanged(nameof(EncryptedText));
             }
             catch(Exception ex)
             {
-                MessageBox.Show($"Nie udało się zaszyfrować: {EncryptedText}");
-                MessageBox.Show(ex.Message);
+                MessageBox.Show($"Nie udało się zaszyfrować: {DecryptedText}");
             }
 
             
